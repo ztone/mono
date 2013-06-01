@@ -36,8 +36,8 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyProduct (Consts.MonoProduct)]
 [assembly: AssemblyCopyright (Consts.MonoCopyright)]
 [assembly: AssemblyVersion (Consts.FxVersion)]
-[assembly: AssemblyInformationalVersion (Consts.FxFileVersion)]
-[assembly: AssemblyFileVersion (Consts.FxFileVersion)]
+[assembly: AssemblyInformationalVersion ("4.0.0.0")]
+[assembly: AssemblyFileVersion ("4.0.0.0")]
 [assembly: AssemblyDelaySign (true)]
 [assembly: AssemblyKeyFile ("../../msfinal.pub")]
 
