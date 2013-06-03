@@ -158,6 +158,7 @@ namespace Mono.CSharp {
 		public bool StdLib;
 
 		public RuntimeVersion StdLibRuntimeVersion;
+		public RuntimeVersion? ForceRuntimeVersion;
 
 		public bool WriteMetadataOnly;
 
@@ -1422,7 +1423,7 @@ namespace Mono.CSharp {
 				return ParseResult.Success;
 
 			default:
-				if (arg.StartsWith ("--fatal", StringComparison.Ordinal)){
+				if (arg.StartsWith ("--fatal", StringComparison.Ordinal)) {
 					int fatal = 1;
 					if (arg.StartsWith ("--fatal=", StringComparison.Ordinal))
 						int.TryParse (arg.Substring (8), out fatal);
@@ -1445,6 +1446,26 @@ namespace Mono.CSharp {
 					case "v4":
 					case "V4":
 						settings.StdLibRuntimeVersion = RuntimeVersion.v4;
+						break;
+					}
+					return ParseResult.Success;
+				}
+				if (arg.StartsWith ("--force-runtime:", StringComparison.Ordinal)) {
+					string version = arg.Substring (16);
+
+					
+					switch (version) {
+					case "v1":
+					case "V1":
+						settings.ForceRuntimeVersion = RuntimeVersion.v1;
+						break;
+					case "v2":
+					case "V2":
+						settings.ForceRuntimeVersion = RuntimeVersion.v2;
+						break;
+					case "v4":
+					case "V4":
+						settings.ForceRuntimeVersion = RuntimeVersion.v4;
 						break;
 					}
 					return ParseResult.Success;
