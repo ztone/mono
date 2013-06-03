@@ -6,7 +6,7 @@ LIBRARY_SUBDIR = Facades
 LIBRARY_INSTALL_DIR = $(mono_libdir)/mono/$(FRAMEWORK_VERSION)/Facades
 
 LIBRARY = System.Runtime.Serialization.Primitives.dll
-LIB_MCS_FLAGS = /r:System.Runtime.Serialization /r:System.Xml
+LIB_MCS_FLAGS = --force-runtime:v4 /r:System.Runtime.Serialization /r:System.Xml
 
 NO_TEST = yes
 

@@ -6,7 +6,7 @@ LIBRARY_SUBDIR = Facades
 LIBRARY_INSTALL_DIR = $(mono_libdir)/mono/$(FRAMEWORK_VERSION)/Facades
 
 LIBRARY = System.ServiceModel.Http.dll
-LIB_MCS_FLAGS = /r:System.ServiceModel
+LIB_MCS_FLAGS = --force-runtime:v4 /r:System.ServiceModel
 
 NO_TEST = yes
 

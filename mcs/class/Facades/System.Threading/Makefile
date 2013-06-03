@@ -6,7 +6,7 @@ LIBRARY_SUBDIR = Facades
 LIBRARY_INSTALL_DIR = $(mono_libdir)/mono/$(FRAMEWORK_VERSION)/Facades
 
 LIBRARY = System.Threading.dll
-LIB_MCS_FLAGS = /r:System.Core /r:System
+LIB_MCS_FLAGS = --force-runtime:v4 /r:System.Core /r:System
 
 NO_TEST = yes
 

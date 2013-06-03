@@ -6,7 +6,7 @@ LIBRARY_SUBDIR = Facades
 LIBRARY_INSTALL_DIR = $(mono_libdir)/mono/$(FRAMEWORK_VERSION)/Facades
 
 LIBRARY = System.ComponentModel.Annotations.dll
-LIB_MCS_FLAGS = /r:System.ComponentModel.DataAnnotations
+LIB_MCS_FLAGS = --force-runtime:v4 /r:System.ComponentModel.DataAnnotations
 
 NO_TEST = yes
 

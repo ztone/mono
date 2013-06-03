@@ -6,7 +6,7 @@ LIBRARY_SUBDIR = Facades
 LIBRARY_INSTALL_DIR = $(mono_libdir)/mono/$(FRAMEWORK_VERSION)/Facades
 
 LIBRARY = System.Xml.XDocument.dll
-LIB_MCS_FLAGS = /r:System.Xml.Linq /r:System.Xml
+LIB_MCS_FLAGS = --force-runtime:v4 /r:System.Xml.Linq /r:System.Xml
 
 NO_TEST = yes
 
