@@ -1154,7 +1154,10 @@ namespace System.Net
 			contentLength = -1;
 			//bodyBufferLength = 0;
 			//bodyBuffer = null;
-			sendChunked = false;
+			if (sendChunked) {
+				sendChunked = false;
+				webHeaders.RemoveInternal ("Transfer-Encoding");
+			}
 			uriString = webResponse.Headers ["Location"];
 
 			if (uriString == null)
