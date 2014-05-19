@@ -1324,9 +1324,7 @@ namespace System.Net
 			}
 
 			try {
-				var result = writeStream.SetHeadersAsync (false, SetWriteStreamCB, null);
-				if (result == null)
-					SetWriteStreamCB (null);
+				writeStream.SetHeadersAsync (false, SetWriteStreamCB, null);
 			} catch (Exception exc) {
 				SetWriteStreamErrorCB (exc);
 			}
@@ -1343,9 +1341,9 @@ namespace System.Net
 
 		void SetWriteStreamCB (IAsyncResult ar)
 		{
-			WebAsyncResult result = ar as WebAsyncResult;
+			SimpleAsyncResult result = (SimpleAsyncResult)ar;
 
-			if (result != null && result.Exception != null) {
+			if (result.GotException) {
 				SetWriteStreamErrorCB (result.Exception);
 				return;
 			}
