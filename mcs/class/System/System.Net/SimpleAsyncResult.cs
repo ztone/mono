@@ -61,7 +61,7 @@ namespace System.Net
 			};
 		}
 
-		public static SimpleAsyncResult Start (Func<SimpleAsyncResult,bool> func, SimpleAsyncCallback callback)
+		public static SimpleAsyncResult Start (Predicate<SimpleAsyncResult> func, SimpleAsyncCallback callback)
 		{
 			var result = new SimpleAsyncResult (callback);
 			try {
@@ -73,7 +73,7 @@ namespace System.Net
 			return result;
 		}
 
-		public static SimpleAsyncResult RunWithLock (object locker, Func<SimpleAsyncResult,bool> func, SimpleAsyncCallback callback)
+		public static SimpleAsyncResult RunWithLock (object locker, Predicate<SimpleAsyncResult> func, SimpleAsyncCallback callback)
 		{
 			return Start (inner => {
 				bool running = func (inner);
