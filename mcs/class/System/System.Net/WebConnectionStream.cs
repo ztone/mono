@@ -706,7 +706,7 @@ namespace System.Net
 				return false;
 
 			// Keep the call for a potential side-effect of GetBuffer
-			writeBuffer.GetBuffer ();
+			byte[] bytes = writeBuffer.GetBuffer ();
 			int length = (int)writeBuffer.Length;
 			if (request.ContentLength != -1 && request.ContentLength < length) {
 				nextReadCalled = true;
