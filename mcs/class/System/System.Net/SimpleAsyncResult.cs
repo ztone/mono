@@ -113,7 +113,7 @@ namespace System.Net
 
 		internal void SetCompleted (bool synch, Exception e)
 		{
-			SetCompleted_internal (synch, exc);
+			SetCompleted_internal (synch, e);
 			DoCallback_private ();
 		}
 
@@ -159,7 +159,7 @@ namespace System.Net
 		{
 			if (!callbackDone && cb != null) {
 				callbackDone = true;
-				if (synch)
+				if (true || synch)
 					cb (this);
 				else
 					ThreadPool.QueueUserWorkItem (CB, null);
