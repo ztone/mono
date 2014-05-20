@@ -865,31 +865,29 @@ namespace System.Net
 			return EndGetRequestStream (asyncResult);
 		}
 
-		SimpleAsyncResult CheckIfForceWrite (SimpleAsyncCallback callback)
+		bool CheckIfForceWrite (SimpleAsyncResult result)
 		{
-			return SimpleAsyncResult.Start (result => {
-				if (writeStream == null || writeStream.RequestWritten || !InternalAllowBuffering)
-					return false;
-#if NET_4_0
-				if (contentLength < 0 && writeStream.CanWrite == true && writeStream.WriteBufferLength < 0)
-					return false;
-
-				if (contentLength < 0 && writeStream.WriteBufferLength >= 0)
-					InternalContentLength = writeStream.WriteBufferLength;
-#else
-				if (contentLength < 0 && writeStream.CanWrite == true)
-					return false;
-#endif
-
-				// This will write the POST/PUT if the write stream already has the expected
-				// amount of bytes in it (ContentLength) (bug #77753) or if the write stream
-				// contains data and it has been closed already (xamarin bug #1512).
-
-				if (writeStream.WriteBufferLength == contentLength || (contentLength == -1 && writeStream.CanWrite == false))
-					return writeStream.WriteRequestAsync (result);
-
+			if (writeStream == null || writeStream.RequestWritten || !InternalAllowBuffering)
 				return false;
-			}, callback);
+			#if NET_4_0
+			if (contentLength < 0 && writeStream.CanWrite == true && writeStream.WriteBufferLength < 0)
+				return false;
+
+			if (contentLength < 0 && writeStream.WriteBufferLength >= 0)
+				InternalContentLength = writeStream.WriteBufferLength;
+			#else
+			if (contentLength < 0 && writeStream.CanWrite == true)
+				return false;
+			#endif
+
+			// This will write the POST/PUT if the write stream already has the expected
+			// amount of bytes in it (ContentLength) (bug #77753) or if the write stream
+			// contains data and it has been closed already (xamarin bug #1512).
+
+			if (writeStream.WriteBufferLength == contentLength || (contentLength == -1 && writeStream.CanWrite == false))
+				return writeStream.WriteRequestAsync (result);
+
+			return false;
 		}
 
 		public override IAsyncResult BeginGetResponse (AsyncCallback callback, object state)
@@ -916,28 +914,18 @@ namespace System.Net
 			WebAsyncResult aread = asyncRead;
 			initialMethod = method;
 
-			Console.WriteLine ("BEGIN GET RESPONSE");
-
-			var result = CheckIfForceWrite (inner => {
+			SimpleAsyncResult.RunWithLock (locker, CheckIfForceWrite, inner => {
 				var synch = inner.CompletedSynchronously;
 
-				Console.WriteLine ("BEGIN GET RESPONSE CB: {0} {1}", synch, inner.GotException);
-
 				if (inner.GotException) {
-					if (synch)
-						Monitor.Exit (locker);
-					asyncRead.SetCompleted (synch, inner.Exception);
-					asyncRead.DoCallback ();
+					aread.SetCompleted (synch, inner.Exception);
+					aread.DoCallback ();
 					return;
 				}
-
-				if (!synch)
-					Monitor.Enter (locker);
 
 				if (haveResponse) {
 					Exception saved = saved_exc;
 					if (webResponse != null) {
-						Monitor.Exit (locker);
 						if (saved == null) {
 							aread.SetCompleted (synch, webResponse);
 						} else {
@@ -946,7 +934,6 @@ namespace System.Net
 						aread.DoCallback ();
 						return;
 					} else if (saved != null) {
-						Monitor.Exit (locker);
 						aread.SetCompleted (synch, saved);
 						aread.DoCallback ();
 						return;
@@ -961,10 +948,6 @@ namespace System.Net
 				}
 			});
 
-			Console.WriteLine ("BEGIN GET RESPONSE #1: {0}", result.CompletedSynchronously);
-
-			if (!result.CompletedSynchronously)
-				Monitor.Exit (locker);
 			return aread;
 		}
 
@@ -1335,8 +1318,6 @@ namespace System.Net
 						SetWriteStreamError (inner.Exception);
 						return;
 					}
-
-					Console.WriteLine ("SET WRITE STREAM CB: {0}", asyncWrite != null);
 
 					if (asyncWrite != null) {
 						asyncWrite.SetCompleted (inner.CompletedSynchronously, writeStream);
