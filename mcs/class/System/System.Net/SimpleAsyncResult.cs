@@ -34,21 +34,28 @@ using System.Threading;
 
 namespace System.Net
 {
+	delegate void SimpleAsyncCallback (SimpleAsyncResult result);
+
 	class SimpleAsyncResult : IAsyncResult
 	{
 		ManualResetEvent handle;
 		bool synch;
 		bool isCompleted;
-		AsyncCallback cb;
+		SimpleAsyncCallback cb;
 		object state;
 		bool callbackDone;
 		Exception exc;
 		object locker = new object ();
 
-		public SimpleAsyncResult (AsyncCallback cb, object state)
+		public SimpleAsyncResult (SimpleAsyncCallback cb)
 		{
 			this.cb = cb;
+		}
+
+		public SimpleAsyncResult (AsyncCallback cb, object state)
+		{
 			this.state = state;
+			this.cb = r => cb (this);
 		}
 
 		protected void Reset_internal ()
