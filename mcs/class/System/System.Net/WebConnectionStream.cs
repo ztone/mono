@@ -720,6 +720,14 @@ namespace System.Net
 		void WriteRequestAsyncCB (IAsyncResult ar)
 		{
 			var result = (WebAsyncResult)ar.AsyncState;
+			var sar = ar as Sockets.Socket.SocketAsyncResult;
+			if (sar != null)
+				throw new InvalidOperationException (string.Format (
+					"FUCK #2: {0}", sar.CreatedAt));
+			if (!(ar is SimpleAsyncResult)) {
+				throw new InvalidOperationException (string.Format (
+					"FUCK #1: {0}", ar.GetType ()));
+			}
 			var innerResult = (SimpleAsyncResult)ar;
 			result.InnerAsyncResult = null;
 

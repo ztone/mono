@@ -121,6 +121,8 @@ namespace System.Net.Sockets {
 			public Worker Worker;
 			public int CurrentAddress; // Connect
 
+			public readonly string CreatedAt = Environment.StackTrace;
+
 			public SocketAsyncResult ()
 			{
 			}
