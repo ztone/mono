@@ -635,14 +635,7 @@ namespace System.Net
 
 		internal SimpleAsyncResult SetHeadersAsync (bool setInternalLength, SimpleAsyncCallback callback)
 		{
-			var result = new SimpleAsyncResult (callback);
-			try {
-				if (!SetHeadersAsync (result, setInternalLength))
-					result.SetCompleted (true);
-			} catch (Exception ex) {
-				result.SetCompleted (true, ex);
-			}
-			return result;
+			return SimpleAsyncResult.Start (r => SetHeadersAsync (r, setInternalLength), callback);
 		}
 
 		bool SetHeadersAsync (SimpleAsyncResult result, bool setInternalLength)
@@ -666,7 +659,10 @@ namespace System.Net
 			headersSent = true;
 			headers = request.GetRequestHeaders ();
 
+			Console.WriteLine ("SET HEADERS: {0}", setInternalLength);
+
 			var innerResult = cnc.BeginWrite (request, headers, 0, headers.Length, r => {
+				Console.WriteLine ("SET HEADERS CB");
 				try {
 					cnc.EndWrite (request, true, r);
 					if (!initRead) {
@@ -683,6 +679,8 @@ namespace System.Net
 					result.SetCompleted (false, new WebException ("Error writing headers", e, WebExceptionStatus.SendFailure));
 				}
 			}, null);
+
+			Console.WriteLine ("SET HEADERS #1: {0}", innerResult != null);
 
 			return innerResult != null;
 		}
@@ -721,7 +719,10 @@ namespace System.Net
 					WebExceptionStatus.ServerProtocolViolation, null);
 			}
 
-			SetHeadersAsync (true, inner => {
+			Console.WriteLine ("WRITE REQUEST ASYNC");
+
+			var ret = SetHeadersAsync (true, inner => {
+				Console.WriteLine ("WRITE REQUEST ASYNC CB");
 				if (inner.GotException) {
 					result.SetCompleted (inner.CompletedSynchronously, inner.Exception);
 					return;
@@ -743,8 +744,11 @@ namespace System.Net
 					return;
 				}
 
+				Console.WriteLine ("WRITE REQUEST ASYNC CB #1");
+
 				cnc.BeginWrite (request, bytes, 0, length, r => {
 					try {
+						Console.WriteLine ("WRITE REQUEST ASYNC CB #2");
 						complete_request_written = cnc.EndWrite (request, false, r);
 						result.SetCompleted (false);
 					} catch (Exception exc) {
@@ -752,6 +756,8 @@ namespace System.Net
 					}
 				}, null);
 			});
+
+			Console.WriteLine ("WRITE REQUEST ASYNC #1: {0}", ret);
 
 			return true;
 		}

@@ -47,15 +47,56 @@ namespace System.Net
 		Exception exc;
 		object locker = new object ();
 
-		public SimpleAsyncResult (SimpleAsyncCallback cb)
+		SimpleAsyncResult (SimpleAsyncCallback cb)
 		{
 			this.cb = cb;
 		}
 
-		public SimpleAsyncResult (AsyncCallback cb, object state)
+		protected SimpleAsyncResult (AsyncCallback cb, object state)
 		{
 			this.state = state;
-			this.cb = r => cb (this);
+			this.cb = result => {
+				if (cb != null)
+					cb (this);
+			};
+		}
+
+		public static SimpleAsyncResult Start (Func<SimpleAsyncResult,bool> func, SimpleAsyncCallback callback)
+		{
+			var result = new SimpleAsyncResult (callback);
+			try {
+				if (!func (result))
+					result.SetCompleted (true);
+			} catch (Exception ex) {
+				result.SetCompleted (true, ex);
+			}
+			return result;
+		}
+
+		public static SimpleAsyncResult RunWithLock (object locker, Func<SimpleAsyncResult,bool> func, SimpleAsyncCallback callback)
+		{
+			return Start (inner => {
+				bool running = func (inner);
+				if (running)
+					Monitor.Exit (locker);
+				return running;
+			}, inner => {
+				if (inner.GotException) {
+					if (inner.CompletedSynchronously)
+						Monitor.Exit (locker);
+					callback (inner);
+					return;
+				}
+
+				try {
+					if (!inner.CompletedSynchronously)
+						Monitor.Enter (locker);
+
+					callback (inner);
+				} finally {
+					Monitor.Exit (locker);
+				}
+			});
 		}
 
 		protected void Reset_internal ()
@@ -73,13 +114,13 @@ namespace System.Net
 		internal void SetCompleted (bool synch, Exception e)
 		{
 			SetCompleted_internal (synch, exc);
-			DoCallback_internal ();
+			DoCallback_private ();
 		}
 
 		internal void SetCompleted (bool synch)
 		{
 			SetCompleted_internal (synch);
-			DoCallback_internal ();
+			DoCallback_private ();
 		}
 
 		protected void SetCompleted_internal (bool synch, Exception e)
@@ -95,12 +136,23 @@ namespace System.Net
 
 		protected void SetCompleted_internal (bool synch)
 		{
+			this.synch = synch;
 			exc = null;
 			lock (locker) {
 				isCompleted = true;
 				if (handle != null)
 					handle.Set ();
 			}
+		}
+
+		void DoCallback_private ()
+		{
+			if (callbackDone)
+				throw new InvalidOperationException ();
+			callbackDone = true;
+			if (cb == null)
+				return;
+			cb (this);
 		}
 
 		protected void DoCallback_internal ()
