@@ -869,13 +869,10 @@ namespace System.Net
 		{
 			var result = new SimpleAsyncResult (callback);
 			try {
-				if (!CheckIfForceWrite (result)) {
+				if (!CheckIfForceWrite (result))
 					result.SetCompleted (true);
-					result.DoCallback ();
-				}
 			} catch (Exception ex) {
 				result.SetCompleted (true, ex);
-				result.DoCallback ();
 			}
 			return result;
 		}

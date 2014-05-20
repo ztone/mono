@@ -76,19 +76,24 @@ namespace System.Net
 		internal void SetCompleted (bool synch, int nbytes)
 		{
 			this.nbytes = nbytes;
-			SetCompleted (synch);
+			SetCompleted_internal (synch);
 		}
 		
 		internal void SetCompleted (bool synch, Stream writeStream)
 		{
 			this.writeStream = writeStream;
-			SetCompleted (synch);
+			SetCompleted_internal (synch);
 		}
 		
 		internal void SetCompleted (bool synch, HttpWebResponse response)
 		{
 			this.response = response;
-			SetCompleted (synch);
+			SetCompleted_internal (synch);
+		}
+
+		internal void DoCallback ()
+		{
+			DoCallback_internal ();
 		}
 		
 		internal int NBytes {
