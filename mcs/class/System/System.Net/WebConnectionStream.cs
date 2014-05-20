@@ -637,13 +637,10 @@ namespace System.Net
 		{
 			var result = new SimpleAsyncResult (callback);
 			try {
-				if (!SetHeadersAsync (result, setInternalLength)) {
+				if (!SetHeadersAsync (result, setInternalLength))
 					result.SetCompleted (true);
-					result.DoCallback ();
-				}
 			} catch (Exception ex) {
 				result.SetCompleted (true, ex);
-				result.DoCallback ();
 			}
 			return result;
 		}
@@ -672,7 +669,6 @@ namespace System.Net
 			var innerResult = cnc.BeginWrite (request, headers, 0, headers.Length, r => {
 				try {
 					cnc.EndWrite (request, true, r);
-					result.SetCompleted (false);
 					if (!initRead) {
 						initRead = true;
 						WebConnection.InitRead (cnc);
@@ -680,12 +676,11 @@ namespace System.Net
 					var cl = request.ContentLength;
 					if (!sendChunked && cl == 0)
 						requestWritten = true;
+					result.SetCompleted (false);
 				} catch (WebException e) {
 					result.SetCompleted (false, e);
 				} catch (Exception e) {
 					result.SetCompleted (false, new WebException ("Error writing headers", e, WebExceptionStatus.SendFailure));
-				} finally {
-					result.DoCallback ();
 				}
 			}, null);
 
@@ -700,13 +695,10 @@ namespace System.Net
 		{
 			var result = WriteRequestAsync (callback);
 			try {
-				if (!WriteRequestAsync (result)) {
+				if (!WriteRequestAsync (result))
 					result.SetCompleted (true);
-					result.DoCallback ();
-				}
 			} catch (Exception ex) {
 				result.SetCompleted (true, ex);
-				result.DoCallback ();
 			}
 			return result;
 		}
@@ -732,13 +724,11 @@ namespace System.Net
 			SetHeadersAsync (true, inner => {
 				if (inner.GotException) {
 					result.SetCompleted (inner.CompletedSynchronously, inner.Exception);
-					result.DoCallback ();
 					return;
 				}
 
 				if (cnc.Data.StatusCode != 0 && cnc.Data.StatusCode != 100) {
 					result.SetCompleted (inner.CompletedSynchronously);
-					result.DoCallback ();
 					return;
 				}
 
@@ -748,9 +738,8 @@ namespace System.Net
 				}
 
 				if (length == 0) {
-					result.SetCompleted (inner.CompletedSynchronously);
-					result.DoCallback ();
 					complete_request_written = true;
+					result.SetCompleted (inner.CompletedSynchronously);
 					return;
 				}
 
@@ -760,8 +749,6 @@ namespace System.Net
 						result.SetCompleted (false);
 					} catch (Exception exc) {
 						result.SetCompleted (false, exc);
-					} finally {
-						result.DoCallback ();
 					}
 				}, null);
 			});

@@ -72,6 +72,18 @@ namespace System.Net
 
 		internal void SetCompleted (bool synch, Exception e)
 		{
+			SetCompleted_internal (synch, exc);
+			DoCallback_internal ();
+		}
+
+		internal void SetCompleted (bool synch)
+		{
+			SetCompleted_internal (synch);
+			DoCallback_internal ();
+		}
+
+		protected void SetCompleted_internal (bool synch, Exception e)
+		{
 			this.synch = synch;
 			exc = e;
 			lock (locker) {
@@ -81,7 +93,7 @@ namespace System.Net
 			}
 		}
 
-		internal void SetCompleted (bool synch)
+		protected void SetCompleted_internal (bool synch)
 		{
 			exc = null;
 			lock (locker) {
@@ -91,7 +103,7 @@ namespace System.Net
 			}
 		}
 
-		internal void DoCallback ()
+		protected void DoCallback_internal ()
 		{
 			if (!callbackDone && cb != null) {
 				callbackDone = true;
